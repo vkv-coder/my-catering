@@ -1,0 +1,9 @@
+{
+  "name": "My Catering",
+  "short_name": "My Catering",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0e17",
+  "theme_color": "#0f0e17",
+  "icons": []
+}

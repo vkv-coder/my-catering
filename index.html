@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Catering — Business Management</title>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0f0e17" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+.center-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;}
+.brand{text-align:center;margin-bottom:28px;}
+.brand h1{font-family:'Playfair Display',serif;font-size:30px;color:var(--gold);letter-spacing:1px;}
+.brand p{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-top:4px;}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;width:100%;max-width:400px;}
+.auth-tabs{display:flex;margin-bottom:20px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--muted);}
+.auth-tab.active{background:var(--gold);color:#0f0e17;}
+.form-group{margin-bottom:14px;}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+input,select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;}
+input:focus,select:focus{border-color:var(--gold);}
+.btn{width:100%;padding:13px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-gold{background:var(--gold);color:#0f0e17;}
+.btn-gold:hover{background:var(--gold-light);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.link-row{text-align:center;margin-top:14px;font-size:12px;color:var(--muted);}
+.link-row a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+.status-box{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:14px;text-align:center;}
+.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
+.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
+.status-info{background:#1a2a3a;border:1px solid #2980b9;color:#5dade2;}
+.signup-mode-toggle{display:flex;gap:8px;margin-bottom:16px;}
+.signup-mode-btn{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;}
+.signup-mode-btn.active{border-color:var(--gold);color:var(--gold);}
+
+/* APP SHELL */
+#appShell{display:none;min-height:100vh;}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;}
+.app-header-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);}
+.app-header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;}
+.trial-banner{padding:10px 16px;font-size:12px;font-weight:600;text-align:center;color:#0f0e17;}
+.trial-banner.info{background:linear-gradient(135deg,#5dade2,#2980b9);color:#fff;}
+.trial-banner.warn{background:linear-gradient(135deg,#f0b27a,#e67e22);}
+.app-main{max-width:480px;margin:0 auto;padding:40px 16px;text-align:center;color:var(--muted);}
+.app-main .big-icon{font-size:48px;margin-bottom:16px;}
+
+/* BLOCKED SCREEN */
+.blocked-icon{font-size:56px;margin-bottom:16px;}
+.blocked-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);margin-bottom:10px;}
+.blocked-msg{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
+.blocked-actions{display:flex;flex-direction:column;gap:10px;}
+.btn-wa{background:#25d366;color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="center-screen">
+  <div class="brand">
+    <h1>🍽 My Catering</h1>
+    <p>Business Management</p>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+
+    <div id="authMsg"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@business.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Your password"/></div>
+      <button class="btn btn-gold" id="loginBtn" onclick="doLogin()">Login →</button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signupForm" style="display:none;">
+      <div class="signup-mode-toggle">
+        <div class="signup-mode-btn active" id="modeNewBiz" onclick="setSignupMode('new')">Start New Business</div>
+        <div class="signup-mode-btn" id="modeInvite" onclick="setSignupMode('invite')">Join With Invite</div>
+      </div>
+      <div class="form-group" id="bizNameGroup"><label>Business Name</label><input type="text" id="signupBizName" placeholder="e.g. Royal Caterers"/></div>
+      <div class="form-group"><label>Your Name</label><input type="text" id="signupName" placeholder="Full name"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="you@business.com"/></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="signupPhone" placeholder="10-digit mobile" maxlength="10"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Create a password (min 6 chars)"/></div>
+      <button class="btn btn-gold" id="signupBtn" onclick="doSignup()">Create Account →</button>
+    </div>
+
+    <div class="link-row" id="authLinkRow"></div>
+  </div>
+</div>
+
+<!-- BLOCKED SCREEN -->
+<div id="blockedScreen" class="center-screen" style="display:none;">
+  <div class="auth-card" style="text-align:center;">
+    <div class="blocked-icon">⏰</div>
+    <div class="blocked-title" id="blockedTitle">Trial Ended</div>
+    <div class="blocked-msg" id="blockedMsg">Your 30-day free trial has ended. Your data is safe and waiting — contact us to continue.</div>
+    <div class="blocked-actions">
+      <a href="https://wa.me/919327243611?text=Hi%2C%20I%20want%20to%20continue%20My%20Catering%20after%20my%20trial" target="_blank">
+        <button class="btn btn-wa">📲 WhatsApp Support</button>
+      </a>
+      <a href="mailto:vkvcoder.support@gmail.com">
+        <button class="btn btn-ghost">📧 Email Support</button>
+      </a>
+      <button class="btn btn-ghost" onclick="logout()">⎋ Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL (Phase 1 placeholder — full dashboard built in later phases) -->
+<div id="appShell">
+  <div class="app-header">
+    <div>
+      <div class="app-header-title">🍽 <span id="bizNameHeader">My Catering</span></div>
+      <div class="app-header-sub" id="userNameHeader">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <div id="trialBanner" style="display:none;"></div>
+  <div class="app-main">
+    <div class="big-icon">🚧</div>
+    <p>Your account is set up. The full dashboard (Clients, Events, Vendors, Tasks, Tasting) is coming in the next build phase.</p>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const SCHEMA='my_catering';
+const TRIAL_DAYS=30;
+const SESSION_KEY='mc_session';
+
+let session=null; // {access_token, refresh_token, user}
+let account=null; // accounts row
+let staffRow=null; // staff row for current user
+
+function showMsg(id,msg,type){document.getElementById(id).innerHTML='<div class="status-box status-'+type+'">'+msg+'</div>';}
+function clearMsg(id){document.getElementById(id).innerHTML='';}
+
+async function tg(msg){
+  try{await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg})});}catch(e){}
+}
+
+// ---------- AUTH (raw fetch against Supabase GoTrue) ----------
+async function authSignUp(email,password){
+  const res=await fetch(SB_URL+'/auth/v1/signup',{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,password})
+  });
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.msg||data.error_description||data.error||'Signup failed');
+  return data; // {access_token,refresh_token,user} if email confirm disabled, else just {user}
+}
+
+async function authLogin(email,password){
+  const res=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,password})
+  });
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.error_description||data.msg||'Login failed');
+  return data; // {access_token,refresh_token,user}
+}
+
+async function authRefresh(refresh_token){
+  const res=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({refresh_token})
+  });
+  const data=await res.json();
+  if(!res.ok) throw new Error('Session expired');
+  return data;
+}
+
+function saveSession(data){
+  session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user};
+  localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+}
+function loadSession(){
+  const s=localStorage.getItem(SESSION_KEY);
+  if(s){try{session=JSON.parse(s);}catch(e){session=null;}}
+  return session;
+}
+function clearSession(){
+  session=null;account=null;staffRow=null;
+  localStorage.removeItem(SESSION_KEY);
+}
+
+// ---------- REST / RPC against my_catering schema ----------
+async function sb(method,path,opts={}){
+  return sbCall(method,path,opts,true);
+}
+async function sbCall(method,path,opts,retry){
+  const url=SB_URL+'/rest/v1/'+path+(opts.query?('?'+opts.query):'');
+  const headers={
+    'apikey':SB_KEY,
+    'Authorization':'Bearer '+(session?session.access_token:SB_KEY),
+    'Content-Type':'application/json',
+    'Accept-Profile':SCHEMA,'Content-Profile':SCHEMA,
+    'Prefer':(method==='POST'||method==='PATCH')?'return=representation':''
+  };
+  const res=await fetch(url,{method,headers,body:opts.body?JSON.stringify(opts.body):undefined});
+  if(res.status===401 && retry && session && session.refresh_token){
+    try{
+      const refreshed=await authRefresh(session.refresh_token);
+      saveSession(refreshed);
+      return sbCall(method,path,opts,false);
+    }catch(e){ clearSession(); showAuthScreen(); throw new Error('Session expired, please login again.'); }
+  }
+  const text=await res.text();
+  const data=text?JSON.parse(text):null;
+  if(!res.ok){ throw new Error((data&&(data.message||data.error_description))||'API error '+res.status); }
+  return data;
+}
+async function rpc(fn,args){
+  return sb('POST','rpc/'+fn,{body:args||{}});
+}
+
+// ---------- SIGNUP MODE TOGGLE ----------
+let signupMode='new';
+function setSignupMode(mode){
+  signupMode=mode;
+  document.getElementById('modeNewBiz').classList.toggle('active',mode==='new');
+  document.getElementById('modeInvite').classList.toggle('active',mode==='invite');
+  document.getElementById('bizNameGroup').style.display=(mode==='new')?'block':'none';
+}
+
+function switchAuthTab(tab){
+  document.getElementById('tabLogin').classList.toggle('active',tab==='login');
+  document.getElementById('tabSignup').classList.toggle('active',tab==='signup');
+  document.getElementById('loginForm').style.display=(tab==='login')?'block':'none';
+  document.getElementById('signupForm').style.display=(tab==='signup')?'block':'none';
+  clearMsg('authMsg');
+}
+
+// ---------- LOGIN ----------
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email||!password){showMsg('authMsg','Enter email and password.','error');return;}
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.textContent='Logging in...';
+  clearMsg('authMsg');
+  try{
+    const data=await authLogin(email,password);
+    saveSession(data);
+    await enterApp();
+  }catch(e){
+    showMsg('authMsg',e.message,'error');
+  }finally{
+    btn.disabled=false;btn.textContent='Login →';
+  }
+}
+
+// ---------- SIGNUP ----------
+async function doSignup(){
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const phone=document.getElementById('signupPhone').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  const bizName=document.getElementById('signupBizName').value.trim();
+
+  if(!name||!email||!password){showMsg('authMsg','Name, email and password are required.','error');return;}
+  if(password.length<6){showMsg('authMsg','Password must be at least 6 characters.','error');return;}
+  if(signupMode==='new' && !bizName){showMsg('authMsg','Business name is required.','error');return;}
+
+  const btn=document.getElementById('signupBtn');
+  btn.disabled=true;btn.textContent='Creating account...';
+  clearMsg('authMsg');
+  try{
+    const data=await authSignUp(email,password);
+    if(!data.access_token){
+      showMsg('authMsg','Account created! Please check your email to confirm, then login.','success');
+      switchAuthTab('login');
+      return;
+    }
+    saveSession(data);
+
+    if(signupMode==='new'){
+      await rpc('bootstrap_account',{p_business_name:bizName,p_contact_phone:phone});
+      tg('🆕 <b>New My Catering Signup</b>\n\nBusiness: '+bizName+'\nOwner: '+name+'\nEmail: '+email+'\nPhone: '+(phone||'—'));
+    } else {
+      await rpc('claim_staff_invite',{});
+    }
+    await enterApp();
+  }catch(e){
+    showMsg('authMsg',e.message,'error');
+  }finally{
+    btn.disabled=false;btn.textContent='Create Account →';
+  }
+}
+
+// ---------- TRIAL LOGIC ----------
+function trialDaysLeft(acc){
+  if(!acc.trial_started_at) return TRIAL_DAYS;
+  const start=new Date(acc.trial_started_at);
+  const extra=parseInt(acc.trial_extended_days)||0;
+  const end=new Date(start.getTime()+(TRIAL_DAYS+extra)*86400000);
+  return Math.ceil((end-new Date())/86400000);
+}
+
+function updateTrialBanner(){
+  const b=document.getElementById('trialBanner');
+  if(!account.trial_started_at){
+    b.style.display='block';b.className='trial-banner info';
+    b.textContent='🎁 Your 30-day free trial starts when you add your first client';
+    return;
+  }
+  const d=trialDaysLeft(account);
+  if(d<=5 && d>0){
+    b.style.display='block';b.className='trial-banner warn';
+    b.textContent='⚠️ Trial: '+d+' day'+(d===1?'':'s')+' remaining — Contact support to continue';
+  } else {
+    b.style.display='none';
+  }
+}
+
+function checkTrialAndEnter(){
+  if(account.status==='blocked'){
+    document.getElementById('blockedTitle').textContent='Account Blocked';
+    document.getElementById('blockedMsg').textContent='Your account has been blocked. Please contact support.';
+    showBlockedScreen();return;
+  }
+  if(account.status==='trial' && account.trial_started_at && trialDaysLeft(account)<=0){
+    document.getElementById('blockedTitle').textContent='Trial Ended';
+    document.getElementById('blockedMsg').textContent="Your 30-day free trial has ended. Your data is safe and waiting — contact vkvcoder.support@gmail.com to continue using My Catering.";
+    showBlockedScreen();return;
+  }
+  showAppShell();
+}
+
+// ---------- SCREEN SWITCHING ----------
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('blockedScreen').style.display='none';
+  document.getElementById('appShell').style.display='none';
+}
+function showBlockedScreen(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('blockedScreen').style.display='flex';
+  document.getElementById('appShell').style.display='none';
+}
+function showAppShell(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('blockedScreen').style.display='none';
+  document.getElementById('appShell').style.display='block';
+  document.getElementById('bizNameHeader').textContent=account.business_name;
+  document.getElementById('userNameHeader').textContent=staffRow?staffRow.full_name:'';
+  updateTrialBanner();
+}
+
+// ---------- ENTER APP (fetch account + staff row, decide screen) ----------
+async function enterApp(){
+  try{
+    const staffRows=await sb('GET','staff',{query:'user_id=eq.'+session.user.id+'&select=*'});
+    if(!staffRows||!staffRows.length){
+      showMsg('authMsg','No account linked to this login yet.','error');
+      clearSession();showAuthScreen();return;
+    }
+    staffRow=staffRows[0];
+    const accRows=await sb('GET','accounts',{query:'id=eq.'+staffRow.account_id+'&select=*'});
+    if(!accRows||!accRows.length){
+      showMsg('authMsg','Account not found.','error');
+      clearSession();showAuthScreen();return;
+    }
+    account=accRows[0];
+    checkTrialAndEnter();
+  }catch(e){
+    showMsg('authMsg',e.message,'error');
+  }
+}
+
+function logout(){
+  clearSession();
+  showAuthScreen();
+}
+
+// ---------- INIT ----------
+window.addEventListener('DOMContentLoaded',async()=>{
+  setSignupMode('new');
+  if(loadSession()){
+    await enterApp();
+  } else {
+    showAuthScreen();
+  }
+});
+</script>
+</body>
+</html>
