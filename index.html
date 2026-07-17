@@ -56,6 +56,47 @@ input:focus,select:focus{border-color:var(--gold);}
 .blocked-msg{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
 .blocked-actions{display:flex;flex-direction:column;gap:10px;}
 .btn-wa{background:#25d366;color:#fff;}
+
+/* NAV */
+.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.nav-tab{flex:1;padding:12px 4px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:'Inter',sans-serif;}
+.nav-tab .tab-icon{display:block;font-size:18px;margin-bottom:2px;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-content{display:none;max-width:520px;margin:0 auto;padding:16px;padding-bottom:80px;}
+.tab-content.active{display:block;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;position:relative;overflow:hidden;}
+.card-left-bar{position:absolute;left:0;top:0;bottom:0;width:4px;}
+.card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:2px;}
+.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+.badge-gold{background:rgba(201,168,76,0.18);color:var(--gold-light);}
+.badge-blue{background:rgba(41,128,185,0.18);color:#5dade2;}
+.badge-grey{background:rgba(139,137,164,0.18);color:var(--muted);}
+.badge-green{background:rgba(39,174,96,0.18);color:#58d68d;}
+.badge-red{background:rgba(192,57,43,0.18);color:#f1948a;}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:18px 0 10px;}
+.empty-state{text-align:center;padding:40px 16px;color:var(--muted);}
+.empty-state .big-icon{font-size:40px;margin-bottom:12px;}
+.fab{position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--gold);color:#0f0e17;border:none;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,0.4);cursor:pointer;z-index:60;}
+.back-link{color:var(--muted);font-size:13px;cursor:pointer;display:inline-block;margin-bottom:14px;}
+.action-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.btn-sm{width:auto;padding:8px 14px;font-size:12px;border-radius:6px;}
+.chip-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;}
+.chip{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.chip.active{background:var(--gold);color:#0f0e17;border-color:var(--gold);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:var(--card);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;}
+.item-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.item-row-del{background:transparent;border:none;color:var(--red);cursor:pointer;font-size:16px;}
+.vendor-check-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.vendor-check-row input{width:auto;}
 </style>
 </head>
 <body>
@@ -117,7 +158,7 @@ input:focus,select:focus{border-color:var(--gold);}
   </div>
 </div>
 
-<!-- APP SHELL (Phase 1 placeholder — full dashboard built in later phases) -->
+<!-- APP SHELL -->
 <div id="appShell">
   <div class="app-header">
     <div>
@@ -127,11 +168,123 @@ input:focus,select:focus{border-color:var(--gold);}
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
   <div id="trialBanner" style="display:none;"></div>
-  <div class="app-main">
-    <div class="big-icon">🚧</div>
-    <p>Your account is set up. The full dashboard (Clients, Events, Vendors, Tasks, Tasting) is coming in the next build phase.</p>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('tab-clients')"><span class="tab-icon">◈</span>Clients</button>
+    <button class="nav-tab" onclick="switchTab('tab-vendors')"><span class="tab-icon">◎</span>Vendors</button>
+  </div>
+
+  <!-- CLIENTS TAB -->
+  <div class="tab-content active" id="tab-clients">
+
+    <!-- LEVEL 1: CLIENT LIST -->
+    <div id="clientListView">
+      <div id="clientList"></div>
+    </div>
+
+    <!-- LEVEL 2: CLIENT DETAIL -->
+    <div id="clientDetailView" style="display:none;">
+      <div class="back-link" onclick="showClientList()">← All Clients</div>
+      <div id="clientDetailContent"></div>
+    </div>
+
+    <!-- LEVEL 3: FUNCTION DETAIL -->
+    <div id="functionDetailView" style="display:none;">
+      <div class="back-link" onclick="showClientDetail()">← Back to Client</div>
+      <div id="functionDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- VENDORS TAB -->
+  <div class="tab-content" id="tab-vendors">
+    <div class="chip-row" id="cuisineChips"></div>
+    <div id="vendorList"></div>
+  </div>
+
+  <button class="fab" id="fabBtn" onclick="onFabClick()">+</button>
+</div>
+
+<!-- MODAL: NEW CLIENT -->
+<div class="modal-overlay" id="modalNewClient">
+  <div class="modal-sheet">
+    <div class="modal-title">New Client <button class="modal-close" onclick="closeModal('modalNewClient')">✕</button></div>
+    <div id="newClientMsg"></div>
+    <div class="form-group"><label>Client Name *</label><input type="text" id="ncName" placeholder="e.g. Sharma Family"/></div>
+    <div class="form-group"><label>Contact Person</label><input type="text" id="ncContact" placeholder="Who to contact"/></div>
+    <div class="form-group"><label>Phone</label><input type="tel" id="ncPhone" placeholder="10-digit mobile"/></div>
+    <div class="form-group"><label>Email</label><input type="email" id="ncEmail" placeholder="Optional"/></div>
+    <div class="form-group"><label>Notes</label><input type="text" id="ncNotes" placeholder="Optional"/></div>
+    <button class="btn btn-gold" onclick="saveNewClient()">Save Client</button>
   </div>
 </div>
+
+<!-- MODAL: NEW / EDIT FUNCTION -->
+<div class="modal-overlay" id="modalNewFunction">
+  <div class="modal-sheet">
+    <div class="modal-title"><span id="functionModalTitle">New Function</span> <button class="modal-close" onclick="closeModal('modalNewFunction')">✕</button></div>
+    <div id="newFunctionMsg"></div>
+    <div class="form-group"><label>Function Type *</label>
+      <select id="nfType">
+        <option>Haldi</option><option>Mehendi</option><option>Sangeet</option><option>Wedding</option>
+        <option>Reception</option><option>Engagement</option><option>Gruh Shanti</option><option>House Warming</option>
+        <option>Inauguration</option><option>Corporate Dinner</option><option>Birthday</option><option>Anniversary</option>
+        <option>Small Party</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Date *</label><input type="date" id="nfDate"/></div>
+    <div class="form-group"><label>Pax (guest count)</label><input type="number" id="nfPax" placeholder="e.g. 250"/></div>
+    <div class="form-group"><label>Venue</label><input type="text" id="nfVenue" placeholder="Venue name / address"/></div>
+    <div class="form-group"><label>Time of Day</label>
+      <select id="nfTimeOfDay"><option value="">—</option><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Night</option></select>
+    </div>
+    <div class="form-group"><label>Meal Type</label>
+      <select id="nfMealType"><option value="">—</option><option>Breakfast</option><option>Lunch</option><option>High Tea</option><option>Snacks</option><option>Dinner</option><option>Refreshment</option><option>Full Day</option></select>
+    </div>
+    <div class="form-group"><label>Notes</label><input type="text" id="nfNotes" placeholder="Optional"/></div>
+    <button class="btn btn-gold" onclick="saveFunction()">Save Function</button>
+  </div>
+</div>
+
+<!-- MODAL: ADD ITEMS -->
+<div class="modal-overlay" id="modalAddItems">
+  <div class="modal-sheet">
+    <div class="modal-title">Add Items <button class="modal-close" onclick="closeModal('modalAddItems')">✕</button></div>
+    <div id="addItemsMsg"></div>
+    <div class="section-label">Pending Items</div>
+    <div id="pendingItemsList"><div class="empty-state" style="padding:16px;">No items added yet</div></div>
+
+    <div class="section-label">Add an Item</div>
+    <div class="form-group"><label>Category</label><input type="text" id="aiCategory" placeholder="e.g. Sweets, Chaat, Main Course"/></div>
+    <div class="form-group"><label>Item Name *</label><input type="text" id="aiItemName" placeholder="e.g. Gulab Jamun"/></div>
+    <div class="form-row" style="display:flex;gap:10px;">
+      <div class="form-group" style="flex:1;"><label>Qty</label><input type="text" id="aiQty" placeholder="e.g. 250"/></div>
+      <div class="form-group" style="flex:1;"><label>Unit</label>
+        <select id="aiUnit"><option value="">—</option><option>pax</option><option>pcs</option><option>kg</option><option>ltr</option><option>portion</option><option>plate</option><option>box</option><option>dozen</option></select>
+      </div>
+    </div>
+    <div class="section-label">Assign Vendor(s) (optional)</div>
+    <div id="aiVendorChecklist"></div>
+    <button class="btn btn-ghost" style="margin-top:12px;" onclick="addPendingItem()">+ Add to List</button>
+    <button class="btn btn-gold" style="margin-top:10px;" onclick="saveAllPendingItems()">Save All Items</button>
+  </div>
+</div>
+
+<!-- MODAL: NEW VENDOR -->
+<div class="modal-overlay" id="modalNewVendor">
+  <div class="modal-sheet">
+    <div class="modal-title">New Vendor <button class="modal-close" onclick="closeModal('modalNewVendor')">✕</button></div>
+    <div id="newVendorMsg"></div>
+    <div class="form-group"><label>Agency Name *</label><input type="text" id="nvName" placeholder="e.g. Royal Sweets"/></div>
+    <div class="form-group"><label>Cuisine / Specialty</label><input type="text" id="nvCuisine" placeholder="e.g. Sweets, Chaat, Italian"/></div>
+    <div class="form-group"><label>Contact Person</label><input type="text" id="nvContact" placeholder="Name"/></div>
+    <div class="form-group"><label>Contact Number</label><input type="tel" id="nvNumber" placeholder="10-digit mobile"/></div>
+    <div class="form-group"><label>Base City</label><input type="text" id="nvCity" placeholder="e.g. Ahmedabad"/></div>
+    <div class="form-group"><label>WhatsApp Group Link</label><input type="text" id="nvWaLink" placeholder="Optional"/></div>
+    <button class="btn btn-gold" onclick="saveNewVendor()">Save Vendor</button>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--gold);color:var(--text);padding:10px 18px;border-radius:20px;font-size:13px;display:none;z-index:300;"></div>
 
 <script>
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
@@ -360,6 +513,482 @@ function showAppShell(){
   document.getElementById('bizNameHeader').textContent=account.business_name;
   document.getElementById('userNameHeader').textContent=staffRow?staffRow.full_name:'';
   updateTrialBanner();
+  initAppData();
+}
+
+// ============================================================
+// PHASE 2 — CORE DATA (Clients, Events, Items, Vendors)
+// ============================================================
+const MC_DATA_KEY='mc_appdata_v1';
+const APP={clients:[],events:[],eventItems:[],vendors:[],itemVendors:[],eventVendors:[]};
+let currentClientId=null, currentEventId=null;
+let cuisineFilter='All';
+let pendingItems=[]; // items being staged in the Add Items modal
+
+function toast(msg,ms){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>{t.style.display='none';},ms||2200);
+}
+
+function saveLocalData(){ try{localStorage.setItem(MC_DATA_KEY,JSON.stringify(APP));}catch(e){} }
+function loadLocalData(){
+  try{
+    const d=localStorage.getItem(MC_DATA_KEY);
+    if(!d) return false;
+    const parsed=JSON.parse(d);
+    Object.assign(APP,parsed);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function initAppData(){
+  if(loadLocalData()){ renderClientList(); renderVendorList(); }
+  await loadAppData();
+}
+
+async function loadAppData(){
+  try{
+    const [clients,events,eventItems,vendors,itemVendors,eventVendors]=await Promise.all([
+      sb('GET','clients',{query:'select=*&order=created_at.desc'}),
+      sb('GET','events',{query:'select=*&order=event_date.asc'}),
+      sb('GET','event_items',{query:'select=*'}),
+      sb('GET','vendors',{query:'select=*&order=agency_name.asc'}),
+      sb('GET','item_vendors',{query:'select=*'}),
+      sb('GET','event_vendors',{query:'select=*'})
+    ]);
+    APP.clients=clients||[];APP.events=events||[];APP.eventItems=eventItems||[];
+    APP.vendors=vendors||[];APP.itemVendors=itemVendors||[];APP.eventVendors=eventVendors||[];
+    saveLocalData();
+    renderClientList();
+    renderVendorList();
+    if(currentClientId) renderClientDetail(currentClientId);
+    if(currentEventId) renderFunctionDetail(currentEventId);
+  }catch(e){ toast('Sync failed: '+e.message,3000); }
+}
+
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx=['tab-clients','tab-vendors'].indexOf(tabId);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  document.getElementById('fabBtn').style.display=(tabId==='tab-clients')?'block':'none';
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+
+// ---------- STAGE CONSTANTS ----------
+const STAGE_COLORS=["","#3B5BDB","#D4500A","#B7900A","#862E62","#553C9A","#C9A84C"];
+const STAGE_LABELS=["","Menu Quote","Vendor Costs","Price Quote","Tasting","Advance & Confirm","Final Orders"];
+
+// ---------- CLIENT STATUS (computed, not stored) ----------
+function getClientEvents(clientId){
+  return APP.events.filter(e=>e.client_id===clientId);
+}
+function getEventItemCount(eventId){
+  return APP.eventItems.filter(i=>i.event_id===eventId).length;
+}
+function getClientStatus(client){
+  if(client.status==='not_converted') return {label:'Not Converted',cls:'badge-red',order:4};
+  const evs=getClientEvents(client.id);
+  if(client.status==='served' || (evs.length && evs.every(e=>e.event_status!=='active'))) return {label:'✓ Served',cls:'badge-green',order:3};
+  if(!evs.length) return {label:'New',cls:'badge-grey',order:2};
+  const hasItems=evs.some(e=>e.event_status==='active' && getEventItemCount(e.id)>0);
+  if(hasItems) return {label:'Active',cls:'badge-gold',order:0};
+  return {label:'Quote Stage',cls:'badge-blue',order:1};
+}
+
+// ---------- CLIENT LIST ----------
+function renderClientList(){
+  const el=document.getElementById('clientList');
+  if(!APP.clients.length){
+    el.innerHTML='<div class="empty-state"><div class="big-icon">◈</div><p>No clients yet.<br>Tap + to add your first client.</p></div>';
+    return;
+  }
+  const withStatus=APP.clients.map(c=>({c,st:getClientStatus(c)}));
+  withStatus.sort((a,b)=>a.st.order-b.st.order);
+  el.innerHTML=withStatus.map(({c,st})=>{
+    const evs=getClientEvents(c.id);
+    return '<div class="card" onclick="openClientDetail(\''+c.id+'\')" style="cursor:pointer;">'
+      +'<div class="card-left-bar" style="background:'+(st.order===0?'var(--gold)':st.order===3?'#27ae60':st.order===4?'var(--red)':'var(--muted)')+'"></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+      +'<div class="card-title">'+c.name+'</div><span class="badge '+st.cls+'">'+st.label+'</span></div>'
+      +(c.contact_person?'<div class="card-sub">👤 '+c.contact_person+'</div>':'')
+      +(c.phone?'<div class="card-sub">📱 '+c.phone+'</div>':'')
+      +'<div class="card-sub">'+evs.length+' function'+(evs.length===1?'':'s')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function openClientDetail(clientId){
+  currentClientId=clientId;
+  document.getElementById('clientListView').style.display='none';
+  document.getElementById('clientDetailView').style.display='block';
+  document.getElementById('functionDetailView').style.display='none';
+  renderClientDetail(clientId);
+}
+function showClientList(){
+  currentClientId=null;
+  document.getElementById('clientListView').style.display='block';
+  document.getElementById('clientDetailView').style.display='none';
+  document.getElementById('functionDetailView').style.display='none';
+}
+function showClientDetail(){
+  currentEventId=null;
+  document.getElementById('clientDetailView').style.display='block';
+  document.getElementById('functionDetailView').style.display='none';
+  renderClientDetail(currentClientId);
+}
+
+function renderClientDetail(clientId){
+  const client=APP.clients.find(c=>c.id===clientId);
+  if(!client) return;
+  const evs=getClientEvents(clientId).sort((a,b)=>new Date(a.event_date)-new Date(b.event_date));
+  let html='<div class="card">'
+    +'<div class="card-title">'+client.name+'</div>'
+    +(client.contact_person?'<div class="card-sub">👤 '+client.contact_person+'</div>':'')
+    +(client.phone?'<div class="card-sub">📱 '+client.phone+'</div>':'')
+    +(client.email?'<div class="card-sub">✉️ '+client.email+'</div>':'')
+    +(client.notes?'<div class="card-sub">📝 '+client.notes+'</div>':'')
+    +'<div class="action-row">'
+    +'<button class="btn btn-ghost btn-sm" onclick="setClientStatus(\''+client.id+'\',\'served\')">✓ Mark Served</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="setClientStatus(\''+client.id+'\',\'not_converted\')">✗ Not Converted</button>'
+    +'</div></div>';
+  html+='<div class="section-label">Functions / Events</div>';
+  if(!evs.length){
+    html+='<div class="empty-state" style="padding:20px;"><p>No functions yet. Tap + to add one.</p></div>';
+  } else {
+    html+=evs.map(ev=>{
+      const itemCount=getEventItemCount(ev.id);
+      const color=ev.event_status!=='active'?'var(--muted)':STAGE_COLORS[ev.stage];
+      const stageLabel=ev.event_status==='cancelled'?'Cancelled':ev.event_status==='served'?'Served':STAGE_LABELS[ev.stage];
+      return '<div class="card" onclick="openFunctionDetail(\''+ev.id+'\')" style="cursor:pointer;">'
+        +'<div class="card-left-bar" style="background:'+color+'"></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+        +'<div class="card-title">'+ev.function_type+'</div><span class="badge badge-grey">'+stageLabel+'</span></div>'
+        +'<div class="card-sub">📅 '+ev.event_date+(ev.time_of_day?' · '+ev.time_of_day:'')+'</div>'
+        +(ev.venue?'<div class="card-sub">📍 '+ev.venue+'</div>':'')
+        +(ev.pax?'<div class="card-sub">👥 '+ev.pax+' pax</div>':'')
+        +'<div class="card-sub">'+(itemCount>0?'✓ '+itemCount+' items':'No items yet')+'</div>'
+        +'</div>';
+    }).join('');
+  }
+  document.getElementById('clientDetailContent').innerHTML=html;
+}
+
+function setClientStatus(clientId,status){
+  if(!confirm('Mark this client as '+(status==='served'?'Served':'Not Converted')+'?'))return;
+  sbPatch('clients?id=eq.'+clientId,{status}).then(()=>{
+    const c=APP.clients.find(x=>x.id===clientId);
+    if(c) c.status=status;
+    saveLocalData();renderClientList();renderClientDetail(clientId);
+    toast('Updated ✓');
+  }).catch(e=>alert('Error: '+e.message));
+}
+
+async function sbPatch(path,body){
+  return sb('PATCH',path,{body});
+}
+
+// ---------- FUNCTION / EVENT DETAIL ----------
+function openFunctionDetail(eventId){
+  currentEventId=eventId;
+  document.getElementById('clientDetailView').style.display='none';
+  document.getElementById('functionDetailView').style.display='block';
+  renderFunctionDetail(eventId);
+}
+
+function renderFunctionDetail(eventId){
+  const ev=APP.events.find(e=>e.id===eventId);
+  if(!ev) return;
+  const client=APP.clients.find(c=>c.id===ev.client_id);
+  const items=APP.eventItems.filter(i=>i.event_id===eventId);
+  const color=ev.event_status!=='active'?'var(--muted)':STAGE_COLORS[ev.stage];
+  const stageLabel=ev.event_status==='cancelled'?'Cancelled':ev.event_status==='served'?'Served':STAGE_LABELS[ev.stage];
+
+  let html='<div class="card"><div class="card-left-bar" style="background:'+color+'"></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+    +'<div class="card-title">'+ev.function_type+' — '+(client?client.name:'')+'</div><span class="badge badge-grey">'+stageLabel+'</span></div>'
+    +'<div class="card-sub">📅 '+ev.event_date+(ev.time_of_day?' · '+ev.time_of_day:'')+(ev.meal_type?' · '+ev.meal_type:'')+'</div>'
+    +(ev.venue?'<div class="card-sub">📍 '+ev.venue+'</div>':'')
+    +(ev.pax?'<div class="card-sub">👥 '+ev.pax+' pax</div>':'')
+    +(ev.notes?'<div class="card-sub">📝 '+ev.notes+'</div>':'');
+
+  if(ev.event_status==='active'){
+    html+='<div class="action-row">'
+      +'<button class="btn btn-ghost btn-sm" onclick="editFunction(\''+ev.id+'\')">✎ Edit</button>'
+      +'<button class="btn btn-ghost btn-sm" onclick="promptStage(\''+ev.id+'\')">↷ Change Stage</button>'
+      +'<button class="btn btn-ghost btn-sm" onclick="markFunctionStatus(\''+ev.id+'\',\'served\')">✓ Mark Served</button>'
+      +'<button class="btn btn-ghost btn-sm" onclick="markFunctionStatus(\''+ev.id+'\',\'cancelled\')">✗ Cancel</button>'
+      +'</div>';
+  }
+  html+='</div>';
+
+  html+='<div class="section-label">Items ('+items.length+')</div>';
+  if(!items.length){
+    html+='<div class="empty-state" style="padding:16px;"><p>No items yet. Tap + to add items.</p></div>';
+  } else {
+    html+=items.map(it=>{
+      const assignedVendors=APP.eventVendors.filter(ev=>ev.event_item_id===it.id);
+      return '<div class="item-row" style="flex-direction:column;align-items:stretch;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+        +'<div><b>'+it.item_name+'</b>'+(it.category?' <span style="color:var(--muted);font-size:11px;">('+it.category+')</span>':'')+'</div>'
+        +'<button class="item-row-del" onclick="deleteEventItem(\''+it.id+'\')">🗑</button>'
+        +'</div>'
+        +(it.qty?'<div class="card-sub">Qty: '+it.qty+' '+(it.unit||'')+'</div>':'')
+        +(assignedVendors.length?'<div class="card-sub">Vendors: '+assignedVendors.map(v=>v.agency_name).join(', ')+'</div>':'')
+        +'</div>';
+    }).join('');
+  }
+  document.getElementById('functionDetailContent').innerHTML=html;
+}
+
+function promptStage(eventId){
+  const ev=APP.events.find(e=>e.id===eventId);
+  const val=prompt('Enter stage (1-6):\n1=Menu Quote 2=Vendor Costs 3=Price Quote\n4=Tasting 5=Advance & Confirm 6=Final Orders',ev.stage);
+  if(val===null)return;
+  const stage=parseInt(val);
+  if(isNaN(stage)||stage<1||stage>6){alert('Enter a number 1-6.');return;}
+  sbPatch('events?id=eq.'+eventId,{stage}).then(()=>{
+    ev.stage=stage;saveLocalData();renderFunctionDetail(eventId);renderClientDetail(currentClientId);
+    toast('Stage updated ✓');
+  }).catch(e=>alert('Error: '+e.message));
+}
+
+function markFunctionStatus(eventId,status){
+  const label=status==='served'?'mark this function as Served':'cancel this function';
+  if(!confirm('Are you sure you want to '+label+'?'))return;
+  sbPatch('events?id=eq.'+eventId,{event_status:status}).then(()=>{
+    const ev=APP.events.find(e=>e.id===eventId);
+    if(ev) ev.event_status=status;
+    saveLocalData();renderFunctionDetail(eventId);renderClientDetail(currentClientId);renderClientList();
+    toast('Updated ✓');
+  }).catch(e=>alert('Error: '+e.message));
+}
+
+function deleteEventItem(itemId){
+  if(!confirm('Delete this item?'))return;
+  sb('DELETE','event_items?id=eq.'+itemId,{}).then(()=>{
+    APP.eventItems=APP.eventItems.filter(i=>i.id!==itemId);
+    APP.eventVendors=APP.eventVendors.filter(v=>v.event_item_id!==itemId);
+    saveLocalData();renderFunctionDetail(currentEventId);renderClientDetail(currentClientId);
+    toast('Deleted ✓');
+  }).catch(e=>alert('Error: '+e.message));
+}
+
+// ---------- FAB ----------
+function onFabClick(){
+  if(document.getElementById('tab-clients').classList.contains('active')){
+    if(currentEventId){ openAddItemsModal(); }
+    else if(currentClientId){ openNewFunctionModal(); }
+    else { openNewClientModal(); }
+  } else {
+    openNewVendorModal();
+  }
+}
+
+// ---------- NEW CLIENT ----------
+function openNewClientModal(){
+  ['ncName','ncContact','ncPhone','ncEmail','ncNotes'].forEach(id=>document.getElementById(id).value='');
+  clearMsg('newClientMsg');
+  openModal('modalNewClient');
+}
+async function saveNewClient(){
+  const name=document.getElementById('ncName').value.trim();
+  if(!name){showMsg('newClientMsg','Client name is required.','error');return;}
+  try{
+    const body={account_id:account.id,name,
+      contact_person:document.getElementById('ncContact').value.trim()||null,
+      phone:document.getElementById('ncPhone').value.trim()||null,
+      email:document.getElementById('ncEmail').value.trim()||null,
+      notes:document.getElementById('ncNotes').value.trim()||null};
+    const res=await sb('POST','clients',{body});
+    APP.clients.unshift(res[0]);
+    saveLocalData();renderClientList();closeModal('modalNewClient');
+    toast('Client added ✓');
+    // Start trial on first meaningful action (idempotent — safe to call every time)
+    rpc('start_trial_if_needed',{}).then(()=>{
+      return sb('GET','accounts',{query:'id=eq.'+account.id+'&select=*'});
+    }).then(rows=>{ if(rows&&rows.length){ account=rows[0]; updateTrialBanner(); } }).catch(()=>{});
+  }catch(e){ showMsg('newClientMsg',e.message,'error'); }
+}
+
+// ---------- NEW / EDIT FUNCTION ----------
+let editingFunctionId=null;
+function openNewFunctionModal(){
+  editingFunctionId=null;
+  document.getElementById('functionModalTitle').textContent='New Function';
+  ['nfPax','nfVenue','nfNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nfType').value='Wedding';
+  document.getElementById('nfDate').value='';
+  document.getElementById('nfTimeOfDay').value='';
+  document.getElementById('nfMealType').value='';
+  clearMsg('newFunctionMsg');
+  openModal('modalNewFunction');
+}
+function editFunction(eventId){
+  const ev=APP.events.find(e=>e.id===eventId);
+  if(!ev)return;
+  editingFunctionId=eventId;
+  document.getElementById('functionModalTitle').textContent='Edit Function';
+  document.getElementById('nfType').value=ev.function_type;
+  document.getElementById('nfDate').value=ev.event_date;
+  document.getElementById('nfPax').value=ev.pax||'';
+  document.getElementById('nfVenue').value=ev.venue||'';
+  document.getElementById('nfTimeOfDay').value=ev.time_of_day||'';
+  document.getElementById('nfMealType').value=ev.meal_type||'';
+  document.getElementById('nfNotes').value=ev.notes||'';
+  clearMsg('newFunctionMsg');
+  openModal('modalNewFunction');
+}
+async function saveFunction(){
+  const function_type=document.getElementById('nfType').value;
+  const event_date=document.getElementById('nfDate').value;
+  if(!event_date){showMsg('newFunctionMsg','Date is required.','error');return;}
+  const body={
+    function_type,event_date,
+    pax:parseInt(document.getElementById('nfPax').value)||null,
+    venue:document.getElementById('nfVenue').value.trim()||null,
+    time_of_day:document.getElementById('nfTimeOfDay').value||null,
+    meal_type:document.getElementById('nfMealType').value||null,
+    notes:document.getElementById('nfNotes').value.trim()||null
+  };
+  try{
+    if(editingFunctionId){
+      await sbPatch('events?id=eq.'+editingFunctionId,body);
+      Object.assign(APP.events.find(e=>e.id===editingFunctionId),body);
+      toast('Function updated ✓');
+    } else {
+      body.account_id=account.id;body.client_id=currentClientId;
+      const res=await sb('POST','events',{body});
+      APP.events.push(res[0]);
+      toast('Function added ✓');
+    }
+    saveLocalData();renderClientDetail(currentClientId);
+    if(editingFunctionId) renderFunctionDetail(editingFunctionId);
+    closeModal('modalNewFunction');
+  }catch(e){ showMsg('newFunctionMsg',e.message,'error'); }
+}
+
+// ---------- ADD ITEMS ----------
+function openAddItemsModal(){
+  pendingItems=[];
+  renderPendingItems();
+  document.getElementById('aiCategory').value='';
+  document.getElementById('aiItemName').value='';
+  document.getElementById('aiQty').value='';
+  document.getElementById('aiUnit').value='';
+  clearMsg('addItemsMsg');
+  renderVendorChecklist();
+  openModal('modalAddItems');
+}
+function renderVendorChecklist(){
+  const el=document.getElementById('aiVendorChecklist');
+  if(!APP.vendors.length){ el.innerHTML='<p style="font-size:12px;color:var(--muted);">No vendors added yet — add some in the Vendors tab.</p>'; return; }
+  el.innerHTML=APP.vendors.map(v=>
+    '<label class="vendor-check-row"><input type="checkbox" value="'+v.id+'" class="ai-vendor-cb"/> '+v.agency_name+(v.cuisine?' <span style="color:var(--muted);">('+v.cuisine+')</span>':'')+'</label>'
+  ).join('');
+}
+function renderPendingItems(){
+  const el=document.getElementById('pendingItemsList');
+  if(!pendingItems.length){ el.innerHTML='<div class="empty-state" style="padding:16px;">No items added yet</div>'; return; }
+  el.innerHTML=pendingItems.map((p,i)=>
+    '<div class="item-row"><div><b>'+p.item_name+'</b>'+(p.category?' ('+p.category+')':'')+(p.qty?' — '+p.qty+' '+(p.unit||''):'')
+    +(p.vendorNames.length?'<div class="card-sub">Vendors: '+p.vendorNames.join(', ')+'</div>':'')
+    +'</div><button class="item-row-del" onclick="removePendingItem('+i+')">🗑</button></div>'
+  ).join('');
+}
+function addPendingItem(){
+  const item_name=document.getElementById('aiItemName').value.trim();
+  if(!item_name){alert('Enter an item name.');return;}
+  const category=document.getElementById('aiCategory').value.trim();
+  const qty=document.getElementById('aiQty').value.trim();
+  const unit=document.getElementById('aiUnit').value;
+  const checked=[...document.querySelectorAll('.ai-vendor-cb:checked')].map(cb=>cb.value);
+  const vendorNames=checked.map(id=>{const v=APP.vendors.find(x=>x.id===id);return v?v.agency_name:'';}).filter(Boolean);
+  pendingItems.push({item_name,category,qty,unit,vendorIds:checked,vendorNames});
+  document.getElementById('aiItemName').value='';
+  document.getElementById('aiQty').value='';
+  document.querySelectorAll('.ai-vendor-cb').forEach(cb=>cb.checked=false);
+  renderPendingItems();
+}
+function removePendingItem(idx){ pendingItems.splice(idx,1); renderPendingItems(); }
+
+async function saveAllPendingItems(){
+  if(!pendingItems.length){showMsg('addItemsMsg','Add at least one item first.','error');return;}
+  try{
+    for(const p of pendingItems){
+      const itemRes=await sb('POST','event_items',{body:{
+        account_id:account.id,event_id:currentEventId,item_name:p.item_name,
+        category:p.category||null,qty:p.qty||null,unit:p.unit||null
+      }});
+      const newItem=itemRes[0];
+      APP.eventItems.push(newItem);
+      for(const vid of p.vendorIds){
+        const v=APP.vendors.find(x=>x.id===vid);
+        const evRes=await sb('POST','event_vendors',{body:{
+          account_id:account.id,event_id:currentEventId,event_item_id:newItem.id,
+          vendor_id:vid,agency_name:v?v.agency_name:null,item_name:p.item_name
+        }});
+        APP.eventVendors.push(evRes[0]);
+      }
+    }
+    saveLocalData();
+    renderFunctionDetail(currentEventId);
+    renderClientDetail(currentClientId);
+    renderClientList();
+    closeModal('modalAddItems');
+    toast('Items saved ✓');
+  }catch(e){ showMsg('addItemsMsg',e.message,'error'); }
+}
+
+// ---------- VENDORS ----------
+function renderVendorList(){
+  const chipsEl=document.getElementById('cuisineChips');
+  const cuisines=['All',...new Set(APP.vendors.map(v=>v.cuisine).filter(Boolean))];
+  chipsEl.innerHTML=cuisines.map(c=>'<div class="chip '+(c===cuisineFilter?'active':'')+'" onclick="filterCuisine(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</div>').join('');
+
+  const el=document.getElementById('vendorList');
+  const filtered=cuisineFilter==='All'?APP.vendors:APP.vendors.filter(v=>v.cuisine===cuisineFilter);
+  if(!filtered.length){
+    el.innerHTML='<div class="empty-state"><div class="big-icon">◎</div><p>No vendors yet.<br>Tap + to add one.</p></div>';
+    return;
+  }
+  el.innerHTML=filtered.map(v=>
+    '<div class="card">'
+    +'<div class="card-title">'+v.agency_name+'</div>'
+    +(v.cuisine?'<div class="card-sub">🍽 '+v.cuisine+'</div>':'')
+    +(v.contact_person?'<div class="card-sub">👤 '+v.contact_person+(v.contact_number?' · '+v.contact_number:'')+'</div>':'')
+    +(v.base_city?'<div class="card-sub">📍 '+v.base_city+'</div>':'')
+    +(v.contact_number?'<div class="action-row"><a href="https://wa.me/91'+v.contact_number+'" target="_blank" style="text-decoration:none;"><button class="btn btn-sm" style="background:#25d366;color:#fff;">💬 WhatsApp</button></a></div>':'')
+    +'</div>'
+  ).join('');
+}
+function filterCuisine(c){ cuisineFilter=c; renderVendorList(); }
+
+function openNewVendorModal(){
+  ['nvName','nvCuisine','nvContact','nvNumber','nvCity','nvWaLink'].forEach(id=>document.getElementById(id).value='');
+  clearMsg('newVendorMsg');
+  openModal('modalNewVendor');
+}
+async function saveNewVendor(){
+  const agency_name=document.getElementById('nvName').value.trim();
+  if(!agency_name){showMsg('newVendorMsg','Agency name is required.','error');return;}
+  try{
+    const body={account_id:account.id,agency_name,
+      cuisine:document.getElementById('nvCuisine').value.trim()||null,
+      contact_person:document.getElementById('nvContact').value.trim()||null,
+      contact_number:document.getElementById('nvNumber').value.trim()||null,
+      base_city:document.getElementById('nvCity').value.trim()||null,
+      whatsapp_group_link:document.getElementById('nvWaLink').value.trim()||null};
+    const res=await sb('POST','vendors',{body});
+    APP.vendors.push(res[0]);
+    saveLocalData();renderVendorList();closeModal('modalNewVendor');
+    toast('Vendor added ✓');
+  }catch(e){ showMsg('newVendorMsg',e.message,'error'); }
 }
 
 // ---------- ENTER APP (fetch account + staff row, decide screen) ----------
