@@ -430,3 +430,11 @@ create policy "my_catering tenant delete own files" on storage.objects for delet
 -- Done. Next: Supabase Dashboard -> Project Settings -> API ->
 -- Exposed Schemas -> add "my_catering"
 -- ============================================================
+
+-- ============================================================
+-- Role grants (needed in addition to RLS — Supabase auto-grants
+-- these for the "public" schema, but custom schemas need it explicitly)
+-- ============================================================
+grant usage on schema my_catering to authenticated;
+grant select, insert, update, delete on all tables in schema my_catering to authenticated;
+alter default privileges in schema my_catering grant select, insert, update, delete on tables to authenticated;
