@@ -120,6 +120,14 @@ input:focus,select:focus{border-color:var(--gold);}
       <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@business.com"/></div>
       <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Your password"/></div>
       <button class="btn btn-gold" id="loginBtn" onclick="doLogin()">Login →</button>
+      <div class="link-row"><a onclick="showForgotForm()" style="cursor:pointer;text-decoration:underline;">Forgot password?</a></div>
+    </div>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <div id="forgotForm" style="display:none;">
+      <div class="form-group"><label>Email</label><input type="email" id="forgotEmail" placeholder="you@business.com"/></div>
+      <button class="btn btn-gold" id="forgotBtn" onclick="doForgotPassword()">Send Reset Link →</button>
+      <div class="link-row"><a onclick="showLoginForm()" style="cursor:pointer;text-decoration:underline;">Back to Login</a></div>
     </div>
 
     <!-- SIGNUP FORM -->
@@ -137,6 +145,22 @@ input:focus,select:focus{border-color:var(--gold);}
     </div>
 
     <div class="link-row" id="authLinkRow"></div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD SCREEN (reached via the emailed reset link) -->
+<div id="resetScreen" class="center-screen" style="display:none;">
+  <div class="brand">
+    <h1>🍽 My Catering</h1>
+    <p>Reset Password</p>
+  </div>
+  <div class="auth-card">
+    <div id="resetMsg"></div>
+    <div id="resetFormGroup">
+      <div class="form-group"><label>New Password</label><input type="password" id="resetNewPassword" placeholder="Min 6 characters"/></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" id="resetConfirmPassword" placeholder="Re-enter new password"/></div>
+      <button class="btn btn-gold" id="resetBtn" onclick="doResetPassword()">Update Password →</button>
+    </div>
   </div>
 </div>
 
@@ -338,6 +362,76 @@ async function authRefresh(refresh_token){
   return data;
 }
 
+async function authRecover(email){
+  const res=await fetch(SB_URL+'/auth/v1/recover',{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,options:{redirect_to:window.location.origin+window.location.pathname}})
+  });
+  if(!res.ok){ const data=await res.json().catch(()=>({})); throw new Error(data.msg||data.error_description||'Could not send reset email'); }
+}
+
+async function authSetNewPassword(accessToken,password){
+  const res=await fetch(SB_URL+'/auth/v1/user',{
+    method:'PUT',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+    body:JSON.stringify({password})
+  });
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.msg||data.error_description||'Could not update password');
+  return data;
+}
+
+// ---------- FORGOT / RESET PASSWORD ----------
+function showForgotForm(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('forgotForm').style.display='block';
+  clearMsg('authMsg');
+}
+function showLoginForm(){
+  document.getElementById('forgotForm').style.display='none';
+  document.getElementById('loginForm').style.display='block';
+  clearMsg('authMsg');
+}
+async function doForgotPassword(){
+  const email=document.getElementById('forgotEmail').value.trim();
+  if(!email){ showMsg('authMsg','Enter your email.','error'); return; }
+  const btn=document.getElementById('forgotBtn');
+  btn.disabled=true;
+  try{
+    await authRecover(email);
+    showMsg('authMsg','If that email is registered, a reset link has been sent. Check your inbox.','success');
+  }catch(e){ showMsg('authMsg',e.message,'error'); }
+  btn.disabled=false;
+}
+
+let resetAccessToken=null;
+function checkForPasswordRecoveryLink(){
+  const hash=window.location.hash.startsWith('#')?window.location.hash.substring(1):window.location.hash;
+  const params=new URLSearchParams(hash);
+  if(params.get('type')==='recovery' && params.get('access_token')){
+    resetAccessToken=params.get('access_token');
+    history.replaceState(null,'',window.location.pathname);
+    showResetScreen();
+    return true;
+  }
+  return false;
+}
+async function doResetPassword(){
+  const p1=document.getElementById('resetNewPassword').value;
+  const p2=document.getElementById('resetConfirmPassword').value;
+  if(!p1||p1.length<6){ showMsg('resetMsg','Password must be at least 6 characters.','error'); return; }
+  if(p1!==p2){ showMsg('resetMsg','Passwords do not match.','error'); return; }
+  const btn=document.getElementById('resetBtn');
+  btn.disabled=true;
+  try{
+    await authSetNewPassword(resetAccessToken,p1);
+    document.getElementById('resetFormGroup').style.display='none';
+    showMsg('resetMsg','Password updated! You can now log in.','success');
+    setTimeout(()=>{ showAuthScreen(); },1800);
+  }catch(e){ showMsg('resetMsg',e.message,'error'); btn.disabled=false; }
+}
+
 function saveSession(data){
   session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user};
   localStorage.setItem(SESSION_KEY,JSON.stringify(session));
@@ -499,16 +593,25 @@ function checkTrialAndEnter(){
 function showAuthScreen(){
   document.getElementById('authScreen').style.display='flex';
   document.getElementById('blockedScreen').style.display='none';
+  document.getElementById('resetScreen').style.display='none';
   document.getElementById('appShell').style.display='none';
 }
 function showBlockedScreen(){
   document.getElementById('authScreen').style.display='none';
   document.getElementById('blockedScreen').style.display='flex';
+  document.getElementById('resetScreen').style.display='none';
+  document.getElementById('appShell').style.display='none';
+}
+function showResetScreen(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('blockedScreen').style.display='none';
+  document.getElementById('resetScreen').style.display='flex';
   document.getElementById('appShell').style.display='none';
 }
 function showAppShell(){
   document.getElementById('authScreen').style.display='none';
   document.getElementById('blockedScreen').style.display='none';
+  document.getElementById('resetScreen').style.display='none';
   document.getElementById('appShell').style.display='block';
   document.getElementById('bizNameHeader').textContent=account.business_name;
   document.getElementById('userNameHeader').textContent=staffRow?staffRow.full_name:'';
@@ -1020,6 +1123,7 @@ function logout(){
 // ---------- INIT ----------
 window.addEventListener('DOMContentLoaded',async()=>{
   setSignupMode('new');
+  if(checkForPasswordRecoveryLink()) return;
   if(loadSession()){
     await enterApp();
   } else {
